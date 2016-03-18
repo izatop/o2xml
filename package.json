@@ -1,0 +1,30 @@
+{
+  "name": "o2xml",
+  "version": "0.1.1",
+  "description": "Convert JavaScript objects to XML",
+  "main": "build/index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "source-map-support": "^0.4.0"
+  },
+  "scripts": {
+    "test": "mocha build/test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/izatop/o2xml.git"
+  },
+  "keywords": [
+    "xml",
+    "xmlwriter",
+    "simplexml",
+    "object2xml",
+    "json2xml"
+  ],
+  "author": "Artur F. Bier <izatop@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/izatop/o2xml/issues"
+  },
+  "homepage": "https://github.com/izatop/o2xml#readme"
+}
