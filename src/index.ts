@@ -281,4 +281,4 @@ class TransformObject {
     }
 }
 
-export {transform, TransformObject, TransformOptions};
+export {AnyObject, TransformFormatter, TransformOptions, TransformObject, transform};
