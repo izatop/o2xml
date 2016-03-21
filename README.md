@@ -1,5 +1,5 @@
 # o2xml
-Convert JavaScript objects to XML
+Simple object to XML converter.
 
 ## Install
 

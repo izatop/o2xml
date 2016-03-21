@@ -1,6 +1,6 @@
 {
   "name": "o2xml",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Convert JavaScript objects to XML",
   "main": "build/index.js",
   "dependencies": {},
@@ -16,10 +16,10 @@
   },
   "keywords": [
     "xml",
-    "xmlwriter",
-    "simplexml",
-    "object2xml",
-    "json2xml"
+    "simple",
+    "writer",
+    "object",
+    "json"
   ],
   "author": "Artur F. Bier <izatop@gmail.com>",
   "license": "MIT",
