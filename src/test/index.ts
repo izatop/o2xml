@@ -25,6 +25,10 @@ describe('Common', () => {
     it('The Array of objects should be converted to a list of nodes', () => {
         assert.equal(o2xml({foo: {bar: [{foo: null}, {bar: null}]}}), '<foo><bar><foo /></bar><bar><bar /></bar></foo>');
     });
+
+    it('The XML declaration should be written when needed', () => {
+        assert.equal(o2xml({foo: null}, {declaration: true}), '<?xml version="1.0" encoding="UTF-8" ?><foo />');
+    });
 });
 
 describe('Validate tag names', () => {

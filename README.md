@@ -47,7 +47,8 @@ converts to:
 ## Options
 
  - pretty: `true|false` make pretty XML (default: `false`).
- - whitespace: `\t` spacing (default: `  `).
+ - indent: `\t` spacing (default: two spaces).
+ - declaration: `true` write the XML declaration (default: `false`).
  - formatters: `{string:fn, boolean:fn, number:fn, date:fn}` format and escape functions.
 
 ## Mix strings, nodes and attributes

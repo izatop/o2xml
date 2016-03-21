@@ -61,11 +61,15 @@ var TransformObject = (function () {
         if (false === this.options.hasOwnProperty('pretty')) {
             this.options.pretty = false;
         }
-        if (false === this.options.hasOwnProperty('whitespace')) {
-            this.options.whitespace = "  ";
+        if (false === this.options.hasOwnProperty('indent')) {
+            this.options.indent = "  ";
         }
     }
     TransformObject.prototype.transform = function () {
+        if (this.options.declaration) {
+            return '<?xml version="1.0" encoding="UTF-8" ?>' + (this.options.pretty ? "\n" : "")
+                + this.createNode(this.name, this.children, -1);
+        }
         return this.createNode(this.name, this.children, -1);
     };
     TransformObject.prototype.createNode = function (node, children, level) {
@@ -203,11 +207,11 @@ var TransformObject = (function () {
         }
         if (this.options.pretty) {
             if (typeof content === "string" && content.length > 0) {
-                var hasChild = content.indexOf(repeat(this.options.whitespace, level + 1) + '<') === 0;
-                return ("" + repeat(this.options.whitespace, level))
+                var hasChild = content.indexOf(repeat(this.options.indent, level + 1) + '<') === 0;
+                return ("" + repeat(this.options.indent, level))
                     + ("<" + name + (attributes ? ' ' + attributes : '') + ">")
                     + ("" + (hasChild ? "\n" : "") + content)
-                    + ((hasChild ? repeat(this.options.whitespace, level) : "") + "</" + name + ">\n");
+                    + ((hasChild ? repeat(this.options.indent, level) : "") + "</" + name + ">\n");
             }
             return "<" + name + (attributes ? ' ' + attributes : '') + " />";
         }

@@ -12,7 +12,8 @@ interface TransformFormatter<T> {
 
 interface TransformOptions {
     pretty?:boolean;
-    whitespace?:string;
+    indent?:string;
+    declaration?:boolean;
     formatters?: {
         string?:TransformFormatter<string>;
         number?:TransformFormatter<number>;
@@ -105,12 +106,17 @@ class TransformObject {
             this.options.pretty = false;
         }
 
-        if (false === this.options.hasOwnProperty('whitespace')) {
-            this.options.whitespace = "  ";
+        if (false === this.options.hasOwnProperty('indent')) {
+            this.options.indent = "  ";
         }
     }
 
     transform() {
+        if (this.options.declaration) {
+            return '<?xml version="1.0" encoding="UTF-8" ?>' + (this.options.pretty ? "\n" : "")
+                + this.createNode(this.name, this.children, -1);
+        }
+
         return this.createNode(this.name, this.children, -1);
     }
 
@@ -257,11 +263,11 @@ class TransformObject {
 
         if (this.options.pretty) {
             if (typeof content === "string" && content.length > 0) {
-                let hasChild = content.indexOf(repeat(this.options.whitespace, level + 1) + '<') === 0;
-                return `${repeat(this.options.whitespace, level)}`
+                let hasChild = content.indexOf(repeat(this.options.indent, level + 1) + '<') === 0;
+                return `${repeat(this.options.indent, level)}`
                     + `<${name}${attributes?' '+attributes:''}>`
                     + `${hasChild ? "\n" : ""}${content}`
-                    + `${hasChild ? repeat(this.options.whitespace, level) : ""}</${name}>\n`;
+                    + `${hasChild ? repeat(this.options.indent, level) : ""}</${name}>\n`;
             }
 
             return `<${name}${attributes?' '+attributes:''} />`;

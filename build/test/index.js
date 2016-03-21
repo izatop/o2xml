@@ -19,6 +19,9 @@ describe('Common', function () {
     it('The Array of objects should be converted to a list of nodes', function () {
         assert.equal(index_1.transform({ foo: { bar: [{ foo: null }, { bar: null }] } }), '<foo><bar><foo /></bar><bar><bar /></bar></foo>');
     });
+    it('The XML declaration should be written when needed', function () {
+        assert.equal(index_1.transform({ foo: null }, { declaration: true }), '<?xml version="1.0" encoding="UTF-8" ?><foo />');
+    });
 });
 describe('Validate tag names', function () {
     it('A root element name should be valid', function () {
