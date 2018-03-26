@@ -1,6 +1,6 @@
 'use strict';
 var validateElementName = function (name) {
-    return null !== name && true === /^([a-z][a-z0-9_\-\.]*(:[a-z][a-z0-9_\-\.]+)?|:[a-z][a-z0-9_\-\.:]*)$/i.test(name);
+    return null !== name && true === /^([a-z][a-z0-9_\-\.]*(:[a-z][a-z0-9_\-\.]*)?|:[a-z][a-z0-9_\-\.:]*)$/i.test(name);
 };
 var repeat = function (string, repeat) {
     var result = '';

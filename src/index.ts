@@ -23,7 +23,7 @@ interface TransformOptions {
 }
 
 const validateElementName = (name:string) => {
-    return null !== name && true === /^([a-z][a-z0-9_\-\.]*(:[a-z][a-z0-9_\-\.]+)?|:[a-z][a-z0-9_\-\.:]*)$/i.test(name);
+    return null !== name && true === /^([a-z][a-z0-9_\-\.]*(:[a-z][a-z0-9_\-\.]*)?|:[a-z][a-z0-9_\-\.:]*)$/i.test(name);
 };
 
 const repeat = (string:string, repeat:number) => {
