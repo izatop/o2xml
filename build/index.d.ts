@@ -22,12 +22,12 @@ declare class TransformObject {
     options: TransformOptions;
     constructor(name: string, children: any, options?: TransformOptions);
     transform(): string;
-    private createNode(node, children?, level?);
-    private getObjectNode(object, level?);
-    private getObjectAttributes(object);
-    private getStringNode(value);
-    private getNumberNode(value);
-    private getBooleanNode(value);
-    private wrapNode(level, name, content?, attributes?);
+    private createNode;
+    private getObjectNode;
+    private getObjectAttributes;
+    private getStringNode;
+    private getNumberNode;
+    private getBooleanNode;
+    private wrapNode;
 }
 export { AnyObject, TransformFormatter, TransformOptions, TransformObject, transform };

@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "module": "commonjs",
+        "sourceMap": true,
+        "declaration": true,
+        "newLine": "LF",
+        "outDir": "build",
+        "rootDir": "src"
+    },
+    "include": [
+        "src"
+    ]
+}

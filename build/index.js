@@ -1,32 +1,33 @@
 'use strict';
-var validateElementName = function (name) {
-    return null !== name && true === /^([a-z][a-z0-9_\-\.]*(:[a-z][a-z0-9_\-\.]*)?|:[a-z][a-z0-9_\-\.:]*)$/i.test(name);
+Object.defineProperty(exports, "__esModule", { value: true });
+const validateElementName = (name) => {
+    return null !== name && /^([a-z][a-z0-9_\-\.]*(:[a-z][a-z0-9_\-\.]*)?|:[a-z][a-z0-9_\-\.:]*)$/i.test(name);
 };
-var repeat = function (string, repeat) {
-    var result = '';
-    for (var i = 0; i < repeat; i++) {
+const repeat = (string, repeat) => {
+    let result = '';
+    for (let i = 0; i < repeat; i++) {
         result += string;
     }
     return result;
 };
-var isPlainObject = function (obj) {
+const isPlainObject = (obj) => {
     if (typeof obj == 'object' && obj !== null) {
         if (typeof Object.getPrototypeOf == 'function') {
-            var proto = Object.getPrototypeOf(obj);
+            let proto = Object.getPrototypeOf(obj);
             return proto === Object.prototype || proto === null;
         }
         return Object.prototype.toString.call(obj) == '[object Object]';
     }
     return false;
 };
-var escapeStringReg = /["'&<>]/g;
-var escapeStringCodes = { '"': '&quot;', '\'': '&#39;', '&': '&amp;', '<': '&lt;', '>': '&gt;' };
-var escapeString = function (string) {
-    return string.replace(escapeStringReg, function (char) {
+const escapeStringReg = /["'&<>]/g;
+const escapeStringCodes = { '"': '&quot;', '\'': '&#39;', '&': '&amp;', '<': '&lt;', '>': '&gt;' };
+const escapeString = (string) => {
+    return string.replace(escapeStringReg, (char) => {
         return escapeStringCodes[char] || char;
     });
 };
-var transform = function (object, options) {
+const transform = (object, options) => {
     if (Object.keys(object).length !== 1) {
         throw new Error('Object must have one the root element.');
     }
@@ -34,12 +35,12 @@ var transform = function (object, options) {
     if (null in object) {
         throw new Error('Null cannot be a root element name.');
     }
-    var rootNodeName = Object.keys(object)[0], rootElement = new TransformObject(rootNodeName, object[rootNodeName], options);
+    let rootNodeName = Object.keys(object)[0], rootElement = new TransformObject(rootNodeName, object[rootNodeName], options);
     return rootElement.transform();
 };
 exports.transform = transform;
-var TransformObject = (function () {
-    function TransformObject(name, children, options) {
+class TransformObject {
+    constructor(name, children, options) {
         this.name = name;
         this.children = children;
         this.options = options || {};
@@ -50,13 +51,13 @@ var TransformObject = (function () {
             this.options.formatters = {};
         }
         if (typeof this.options.formatters.boolean !== "function") {
-            this.options.formatters.boolean = function (v) { return parseInt(v + 0).toString(); };
+            this.options.formatters.boolean = (v) => parseInt(v + 0).toString();
         }
         if (typeof this.options.formatters.string !== "function") {
             this.options.formatters.string = escapeString;
         }
         if (typeof this.options.formatters.number !== "function") {
-            this.options.formatters.number = function (v) { return v.toString(); };
+            this.options.formatters.number = (v) => v.toString();
         }
         if (false === this.options.hasOwnProperty('pretty')) {
             this.options.pretty = false;
@@ -65,33 +66,32 @@ var TransformObject = (function () {
             this.options.indent = "  ";
         }
     }
-    TransformObject.prototype.transform = function () {
+    transform() {
         if (this.options.declaration) {
             return '<?xml version="1.0" encoding="UTF-8" ?>' + (this.options.pretty ? "\n" : "")
                 + this.createNode(this.name, this.children, -1);
         }
         return this.createNode(this.name, this.children, -1);
-    };
-    TransformObject.prototype.createNode = function (node, children, level) {
-        var _this = this;
-        var returnString = '';
+    }
+    createNode(node, children, level) {
+        let returnString = '';
         if (Array.isArray(children)) {
-            returnString = children.map(function (value) { return _this.createNode(node, value, level); }).join('');
+            returnString = children.map(value => this.createNode(node, value, level)).join('');
         }
         else {
             switch (typeof children) {
                 case 'object':
-                    var attributes_1 = {};
+                    let attributes = {};
                     if (isPlainObject(children)) {
                         Object.keys(children)
-                            .forEach(function (key) {
+                            .forEach(key => {
                             if (typeof key === "string" && key.charCodeAt(0) === 64) {
-                                attributes_1[key] = children[key];
+                                attributes[key] = children[key];
                                 delete children[key];
                             }
                         });
                     }
-                    returnString = this.wrapNode(level + 1, node, this.getObjectNode(children, level), this.getObjectAttributes(attributes_1));
+                    returnString = this.wrapNode(level + 1, node, this.getObjectNode(children, level), this.getObjectAttributes(attributes));
                     break;
                 case 'string':
                     if (node.charCodeAt(0) == 35) {
@@ -106,14 +106,13 @@ var TransformObject = (function () {
                     returnString = this.wrapNode(level + 1, node, this.getBooleanNode(children));
                     break;
                 default:
-                    returnString = this.wrapNode(level + 1, node, "<!-- " + typeof children + " -->");
+                    returnString = this.wrapNode(level + 1, node, `<!-- ${typeof children} -->`);
             }
         }
         return returnString;
-    };
+    }
     ;
-    TransformObject.prototype.getObjectNode = function (object, level) {
-        var _this = this;
+    getObjectNode(object, level) {
         if (object === null) {
             return '';
         }
@@ -123,10 +122,10 @@ var TransformObject = (function () {
                 throw new Error('Null cannot be an element name.');
             }
             return Object.keys(object)
-                .map(function (node) { return _this.createNode(node, object[node], level + 1); })
+                .map(node => this.createNode(node, object[node], level + 1))
                 .join('');
         }
-        else if (Buffer && Buffer.isBuffer(object)) {
+        else if (Buffer && Buffer.isBuffer(object)) { // check for Node.js Buffer
             return object.toString('base64');
         }
         else if (object instanceof Date) {
@@ -138,89 +137,87 @@ var TransformObject = (function () {
         else {
             throw new TypeError('Cannot convert object to Node: ' + object.toString());
         }
-    };
-    TransformObject.prototype.getObjectAttributes = function (object) {
-        var _this = this;
-        var attributes = [];
-        Object.keys(object).forEach(function (key) {
-            var name = key.substr(1), value;
+    }
+    getObjectAttributes(object) {
+        let attributes = [];
+        Object.keys(object).forEach(key => {
+            let name = key.substr(1), value;
             if (false === validateElementName(name)) {
-                throw new Error("An element name \"" + name + "\" is not valid");
+                throw new Error(`An element name "${name}" is not valid`);
             }
             switch (typeof object[key]) {
                 case 'string':
-                    value = _this.getStringNode(object[key]);
+                    value = this.getStringNode(object[key]);
                     break;
                 case 'number':
-                    value = _this.getNumberNode(object[key]);
+                    value = this.getNumberNode(object[key]);
                     break;
                 case 'boolean':
-                    value = _this.getBooleanNode(object[key]);
+                    value = this.getBooleanNode(object[key]);
                     break;
                 default:
                     if (object[key] === null) {
                         value = '';
                     }
                     else if (object[key] instanceof Date) {
-                        if (_this.options.formatters.date) {
-                            value = _this.options.formatters.date(object[key]);
+                        if (this.options.formatters.date) {
+                            value = this.options.formatters.date(object[key]);
                         }
                         else {
                             value = object[key].toISOString();
                         }
                     }
-                    else if (Buffer && Buffer.isBuffer(object[key])) {
+                    else if (Buffer && Buffer.isBuffer(object[key])) { // check for Node.js Buffer
                         value = object[key].toString('base64');
                     }
                     else {
-                        throw new Error("Invalid an attribute \"" + name + "\" value: " + typeof object[key]);
+                        throw new Error(`Invalid an attribute "${name}" value: ${typeof object[key]}`);
                     }
             }
-            attributes.push({ key: name, value: value });
+            attributes.push({ key: name, value });
         });
-        return attributes.map(function (x) { return (x.key + "=\"" + x.value + "\""); }).join(' ');
-    };
-    TransformObject.prototype.getStringNode = function (value) {
+        return attributes.map(x => `${x.key}="${x.value}"`).join(' ');
+    }
+    getStringNode(value) {
         if (this.options.formatters.string) {
             return this.options.formatters.string(value);
         }
         return value;
-    };
-    TransformObject.prototype.getNumberNode = function (value) {
+    }
+    getNumberNode(value) {
         if (this.options.formatters.number) {
             return this.options.formatters.number(value);
         }
         return value.toString(10);
-    };
-    TransformObject.prototype.getBooleanNode = function (value) {
+    }
+    getBooleanNode(value) {
         if (this.options.formatters.boolean) {
             return this.options.formatters.boolean(value);
         }
         return value.toString();
-    };
-    TransformObject.prototype.wrapNode = function (level, name, content, attributes) {
+    }
+    wrapNode(level, name, content, attributes) {
         if (false === validateElementName(name)) {
-            throw new Error("An element name \"" + name + "\" is not valid");
+            throw new Error(`An element name "${name}" is not valid`);
         }
         if (name.substr(0, 1) === ":") {
             name = name.substr(1); // local name
         }
         if (this.options.pretty) {
             if (typeof content === "string" && content.length > 0) {
-                var hasChild = content.indexOf(repeat(this.options.indent, level + 1) + '<') === 0;
-                return ("" + repeat(this.options.indent, level))
-                    + ("<" + name + (attributes ? ' ' + attributes : '') + ">")
-                    + ("" + (hasChild ? "\n" : "") + content)
-                    + ((hasChild ? repeat(this.options.indent, level) : "") + "</" + name + ">\n");
+                let hasChild = content.indexOf(repeat(this.options.indent, level + 1) + '<') === 0;
+                return `${repeat(this.options.indent, level)}`
+                    + `<${name}${attributes ? ' ' + attributes : ''}>`
+                    + `${hasChild ? "\n" : ""}${content}`
+                    + `${hasChild ? repeat(this.options.indent, level) : ""}</${name}>\n`;
             }
-            return "<" + name + (attributes ? ' ' + attributes : '') + " />";
+            return `<${name}${attributes ? ' ' + attributes : ''} />`;
         }
         if (typeof content === "string" && content.length > 0) {
-            return "<" + name + (attributes ? ' ' + attributes : '') + ">" + content + "</" + name + ">";
+            return `<${name}${attributes ? ' ' + attributes : ''}>${content}</${name}>`;
         }
-        return "<" + name + (attributes ? ' ' + attributes : '') + " />";
-    };
-    return TransformObject;
-}());
+        return `<${name}${attributes ? ' ' + attributes : ''} />`;
+    }
+}
 exports.TransformObject = TransformObject;
 //# sourceMappingURL=index.js.map
