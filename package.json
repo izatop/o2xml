@@ -1,36 +1,37 @@
 {
-  "name": "o2xml",
-  "version": "0.2.0",
-  "description": "Convert JavaScript objects to XML",
-  "main": "build/index.js",
-  "dependencies": {},
-  "devDependencies": {
-    "@types/mocha": "^7.0.2",
-    "@types/node": "^13.9.2",
-    "mocha": "^7.1.1",
-    "source-map-support": "^0.5.16",
-    "ts-node": "^8.7.0",
-    "typescript": "^3.8.3"
-  },
-  "scripts": {
-    "test": "mocha -r ts-node/register test/**/*.ts",
-    "build": "tsc"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/izatop/o2xml.git"
-  },
-  "keywords": [
-    "xml",
-    "simple",
-    "writer",
-    "object",
-    "json"
-  ],
-  "author": "Artur F. Bier <izatop@gmail.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/izatop/o2xml/issues"
-  },
-  "homepage": "https://github.com/izatop/o2xml#readme"
+    "name": "o2xml",
+    "version": "0.2.0",
+    "description": "Convert JavaScript objects to XML",
+    "main": "build/index.js",
+    "dependencies": {},
+    "devDependencies": {
+        "@types/mocha": "^7.0.2",
+        "@types/node": "^13.9.2",
+        "mocha": "^7.1.1",
+        "source-map-support": "^0.5.16",
+        "ts-node": "^8.7.0",
+        "typescript": "^3.8.3"
+    },
+    "scripts": {
+        "prepublish": "yarn test",
+        "test": "mocha -r ts-node/register test/**/*.ts",
+        "build": "tsc"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/izatop/o2xml.git"
+    },
+    "keywords": [
+        "xml",
+        "simple",
+        "writer",
+        "object",
+        "json"
+    ],
+    "author": "Artur F. Bier <izatop@gmail.com>",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/izatop/o2xml/issues"
+    },
+    "homepage": "https://github.com/izatop/o2xml#readme"
 }
