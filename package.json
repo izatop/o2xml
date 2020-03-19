@@ -1,6 +1,6 @@
 {
   "name": "o2xml",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Convert JavaScript objects to XML",
   "main": "build/index.js",
   "dependencies": {},
