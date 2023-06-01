@@ -2,18 +2,18 @@
     "name": "o2xml",
     "version": "0.2.0",
     "description": "Convert JavaScript objects to XML",
-    "main": "build/index.js",
-    "dependencies": {},
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
     "devDependencies": {
-        "@types/mocha": "^7.0.2",
-        "@types/node": "^13.9.2",
-        "mocha": "^7.1.1",
-        "source-map-support": "^0.5.16",
-        "ts-node": "^8.7.0",
-        "typescript": "^3.8.3"
+        "@types/mocha": "^10.0.1",
+        "@types/node": "^20.2.5",
+        "mocha": "^10.2.0",
+        "rimraf": "^5.0.1",
+        "ts-node": "^10.9.1",
+        "typescript": "^4.9.5"
     },
     "scripts": {
-        "prepublish": "yarn test",
+        "clean": "rimraf dist",
         "test": "mocha -r ts-node/register test/**/*.ts",
         "build": "tsc"
     },
@@ -33,5 +33,6 @@
     "bugs": {
         "url": "https://github.com/izatop/o2xml/issues"
     },
-    "homepage": "https://github.com/izatop/o2xml#readme"
+    "homepage": "https://github.com/izatop/o2xml#readme",
+    "packageManager": "yarn@3.5.1"
 }

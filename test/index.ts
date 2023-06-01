@@ -65,8 +65,8 @@ describe("Converting objects", () => {
 
     it("Buffer should be encoded in base64", () => {
         let png1px = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
-        assert.equal(o2xml({foo: new Buffer(png1px, "base64")}), "<foo>" + png1px + "</foo>");
-        assert.equal(o2xml({foo: {"@bar": new Buffer(png1px, "base64")}}), "<foo bar=\"" + png1px + "\" />");
+        assert.equal(o2xml({foo: Buffer.from(png1px, "base64")}), "<foo>" + png1px + "</foo>");
+        assert.equal(o2xml({foo: {"@bar": Buffer.from(png1px, "base64")}}), "<foo bar=\"" + png1px + "\" />");
     });
 
     it("Mixed strings, objects and attributes should be valid", () => {
