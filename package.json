@@ -15,7 +15,8 @@
     "scripts": {
         "clean": "rimraf dist",
         "test": "mocha -r ts-node/register test/**/*.ts",
-        "build": "tsc"
+        "build": "tsc",
+        "postversion": "git push --tags && git push"
     },
     "repository": {
         "type": "git",
