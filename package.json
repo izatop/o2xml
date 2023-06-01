@@ -4,6 +4,11 @@
     "description": "Convert JavaScript objects to XML",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
     "devDependencies": {
         "@types/mocha": "^10.0.1",
         "@types/node": "^20.2.5",
