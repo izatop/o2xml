@@ -2,8 +2,8 @@
 
 import { Buffer } from "node:buffer";
 
-export interface AnyObject {
-    [root: string]: unknown;
+export interface AnyObject<Root = any> {
+    [root: string]: Root;
 }
 
 export interface TransformFormatter<T> {
@@ -89,13 +89,13 @@ const transform = (object: AnyObject, options?: TransformOptions): string => {
     return rootElement.transform();
 };
 
-class TransformObject {
+class TransformObject<Children = any> {
     name: string;
-    children: unknown;
+    children: Children;
     options: TransformOptions;
     private normalizedOptions: NormalizedOptions;
 
-    constructor(name: string, children: unknown, options?: TransformOptions) {
+    constructor(name: string, children: Children, options?: TransformOptions) {
         this.name = name;
         this.children = children;
         this.options = options || {};

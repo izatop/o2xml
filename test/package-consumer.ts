@@ -147,10 +147,17 @@ void (async () => {
     await writeFile(
         join(consumerDirectory, "consumer-types.ts"),
         `
-import type { TransformOptions } from "o2xml";
+import { TransformObject, transform } from "o2xml";
+import type { AnyObject, TransformFormatter, TransformOptions } from "o2xml";
 
+const value: AnyObject = { root: { child: "value" } };
+const formatter: TransformFormatter<string> = input => input.toUpperCase();
 const options: TransformOptions = { pretty: true };
-void options;
+const transformed: TransformObject = new TransformObject("root", { foo: "value" }, options);
+
+value.root.child;
+transformed.children.foo;
+transform(value, { formatters: { string: formatter } });
 `,
     );
     await writeFile(
