@@ -27,7 +27,6 @@ export interface TransformOptions {
 type NormalizedOptions = {
     pretty: boolean;
     indent: string;
-    declaration: boolean;
     formatters: Required<Omit<TransformFormatters, "date">> &
         Pick<TransformFormatters, "date">;
 };
@@ -85,45 +84,47 @@ const transform = (object: AnyObject, options?: TransformOptions): string => {
 class TransformObject {
     name: string;
     children: unknown;
-    options: NormalizedOptions;
+    options: TransformOptions;
+    private normalizedOptions: NormalizedOptions;
 
     constructor(name: string, children: unknown, options?: TransformOptions) {
         this.name = name;
         this.children = children;
-        this.options = (options || {}) as NormalizedOptions;
+        this.options = options || {};
+        this.normalizedOptions = this.options as NormalizedOptions;
 
         if (Array.isArray(children)) {
             throw new Error('Root element cannot be a list');
         }
 
         if (false === this.options.hasOwnProperty('formatters')) {
-            this.options.formatters = {} as NormalizedOptions["formatters"];
+            this.normalizedOptions.formatters = {} as NormalizedOptions["formatters"];
         }
 
-        if (typeof this.options.formatters.boolean !== "function") {
-            this.options.formatters.boolean = (value: boolean) => Number(value).toString();
+        if (typeof this.normalizedOptions.formatters.boolean !== "function") {
+            this.normalizedOptions.formatters.boolean = (value: boolean) => Number(value).toString();
         }
 
-        if (typeof this.options.formatters.string !== "function") {
-            this.options.formatters.string = escapeString;
+        if (typeof this.normalizedOptions.formatters.string !== "function") {
+            this.normalizedOptions.formatters.string = escapeString;
         }
 
-        if (typeof this.options.formatters.number !== "function") {
-            this.options.formatters.number = (value: number) => value.toString();
+        if (typeof this.normalizedOptions.formatters.number !== "function") {
+            this.normalizedOptions.formatters.number = (value: number) => value.toString();
         }
 
         if (false === this.options.hasOwnProperty('pretty')) {
-            this.options.pretty = false;
+            this.normalizedOptions.pretty = false;
         }
 
         if (false === this.options.hasOwnProperty('indent')) {
-            this.options.indent = "  ";
+            this.normalizedOptions.indent = "  ";
         }
     }
 
     transform(): string {
         if (this.options.declaration) {
-            return '<?xml version="1.0" encoding="UTF-8" ?>' + (this.options.pretty ? "\n" : "")
+            return '<?xml version="1.0" encoding="UTF-8" ?>' + (this.normalizedOptions.pretty ? "\n" : "")
                 + this.createNode(this.name, this.children, -1);
         }
 
@@ -187,8 +188,8 @@ class TransformObject {
         } else if (Buffer.isBuffer(object)) { // check for Node.js Buffer
             return object.toString('base64');
         } else if (object instanceof Date) {
-            if (this.options.formatters.date) {
-                return this.options.formatters.date(object);
+            if (this.normalizedOptions.formatters.date) {
+                return this.normalizedOptions.formatters.date(object);
             }
 
             return object.toISOString();
@@ -222,8 +223,8 @@ class TransformObject {
                     if (attributeValue === null) {
                         value = '';
                     } else if (attributeValue instanceof Date) {
-                        if (this.options.formatters.date) {
-                            value = this.options.formatters.date(attributeValue);
+                        if (this.normalizedOptions.formatters.date) {
+                            value = this.normalizedOptions.formatters.date(attributeValue);
                         } else {
                             value = attributeValue.toISOString();
                         }
@@ -241,24 +242,24 @@ class TransformObject {
     }
 
     private getStringNode(value: string): string {
-        if (this.options.formatters.string) {
-            return this.options.formatters.string(value);
+        if (this.normalizedOptions.formatters.string) {
+            return this.normalizedOptions.formatters.string(value);
         }
 
         return value;
     }
 
     private getNumberNode(value: number): string {
-        if (this.options.formatters.number) {
-            return this.options.formatters.number(value);
+        if (this.normalizedOptions.formatters.number) {
+            return this.normalizedOptions.formatters.number(value);
         }
 
         return value.toString(10);
     }
 
     private getBooleanNode(value: boolean): string {
-        if (this.options.formatters.boolean) {
-            return this.options.formatters.boolean(value);
+        if (this.normalizedOptions.formatters.boolean) {
+            return this.normalizedOptions.formatters.boolean(value);
         }
 
         return value.toString();
@@ -273,13 +274,13 @@ class TransformObject {
             name = name.substr(1); // local name
         }
 
-        if (this.options.pretty) {
+        if (this.normalizedOptions.pretty) {
             if (typeof content === "string" && content.length > 0) {
-                const hasChild = content.indexOf(repeat(this.options.indent, level + 1) + '<') === 0;
-                return `${repeat(this.options.indent, level)}`
+                const hasChild = content.indexOf(repeat(this.normalizedOptions.indent, level + 1) + '<') === 0;
+                return `${repeat(this.normalizedOptions.indent, level)}`
                     + `<${name}${attributes ? ' ' + attributes : ''}>`
                     + `${hasChild ? "\n" : ""}${content}`
-                    + `${hasChild ? repeat(this.options.indent, level) : ""}</${name}>\n`;
+                    + `${hasChild ? repeat(this.normalizedOptions.indent, level) : ""}</${name}>\n`;
             }
 
             return `<${name}${attributes ? ' ' + attributes : ''} />`;
