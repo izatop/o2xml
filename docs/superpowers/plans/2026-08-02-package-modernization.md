@@ -284,8 +284,7 @@ type NormalizedOptions = {
     pretty: boolean;
     indent: string;
     declaration: boolean;
-    formatters: Required<Omit<TransformFormatters, "date">> &
-        Pick<TransformFormatters, "date">;
+    formatters: Required<Omit<TransformFormatters, "date">> & Pick<TransformFormatters, "date">;
 };
 ```
 

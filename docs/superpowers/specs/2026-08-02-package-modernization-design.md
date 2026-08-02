@@ -29,11 +29,11 @@ the source and tests.
 
 The package will publish these entrypoints:
 
-| Consumer | Package condition | File |
-| --- | --- | --- |
-| ES modules | `import` | `dist/index.mjs` |
-| CommonJS | `require` | `dist/index.cjs` |
-| TypeScript | `types` | `dist/types/index.d.ts` |
+| Consumer   | Package condition | File                    |
+| ---------- | ----------------- | ----------------------- |
+| ES modules | `import`          | `dist/index.mjs`        |
+| CommonJS   | `require`         | `dist/index.cjs`        |
+| TypeScript | `types`           | `dist/types/index.d.ts` |
 
 `package.json` will define `exports` for the package root and retain `main`,
 `module`, `types`, and `typings` for compatible tooling.

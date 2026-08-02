@@ -1,83 +1,108 @@
 # o2xml
-Simple object to XML converter.
+
+`o2xml` converts a JavaScript object tree into XML. It has no runtime dependencies and provides ESM, CommonJS, and TypeScript declarations.
 
 ## Install
 
-`npm install o2xml`
+Use the command for your package manager:
 
-## Simple example
-
-```js
-var o2xml = require('o2xml');
-var object = {
-    thing: {
-        '@flag': true,
-        '@number': 123,
-        '@date': new Date(),
-        items: {
-            '@length': 2,
-            item: [
-                {name: 'Alexander', birth: new Date('2002-12-09')},
-                {name: 'Daniel', birth: new Date('1991-03-22')}
-            ]
-        }
-    }
-}
-
-console.log(o2xml.transform(object, {pretty: true}));
+```sh
+npm install o2xml
+bun add o2xml
+yarn add o2xml
 ```
 
-converts to:
+## Use
 
-```xml
-<thing flag="1" number="123" date="2016-03-18T14:18:00.563Z">
-  <items length="2">
-    <item>
-      <name>Alexander</name>
-      <birth>2002-12-09T00:00:00.000Z</birth>
-    </item>
-    <item>
-      <name>Daniel</name>
-      <birth>1991-03-22T00:00:00.000Z</birth>
-    </item>
-  </items>
-</thing>
+ESM:
+
+```ts
+import { transform } from "o2xml";
+
+const xml = transform({ root: { "@id": 1, "#text": "value" } });
+
+console.log(xml);
+// <root id="1">value</root>
 ```
 
-## Options
-
- - pretty: `true|false` make pretty XML (default: `false`).
- - indent: `\t` spacing (default: two spaces).
- - declaration: `true` write the XML declaration (default: `false`).
- - formatters: `{string:fn, boolean:fn, number:fn, date:fn}` format and escape functions.
-
-## Mix strings, nodes and attributes
+CommonJS:
 
 ```js
-var o2xml = require('o2xml');
-var object = {
+const { transform } = require("o2xml");
+
+const xml = transform({ root: { "@id": 1, "#text": "value" } });
+
+console.log(xml);
+// <root id="1">value</root>
+```
+
+The packed package exposes the same `transform` and `TransformObject` runtime exports in both module formats.
+
+## Object model
+
+The input must have exactly one enumerable root property, and the root value cannot be an array. Plain-object keys become elements. Keys beginning with `@` become attributes on that object’s element; a string-valued key beginning with `#` becomes a text fragment, without an enclosing element. Text fragments and elements are emitted in property order.
+
+```ts
+const xml = transform({
     div: {
-        '@id': 'id',
-        '#text': 'Hello, ',
-        span: {
-            '@style': 'font-weight: bold',
-            '#text': 'World'
-        },
-        '#text2': '!'
-    }
-}
+        "@id": "greeting",
+        "#text": "Hello, ",
+        span: { "@style": "font-weight: bold", "#text": "World" },
+        "#tail": "!",
+    },
+});
 
-console.log(o2xml.transform(object));
+console.log(xml);
+// <div id="greeting">Hello, <span style="font-weight: bold">World</span>!</div>
 ```
 
-converts to:
+Children can be strings, numbers, booleans, `null`, plain objects, arrays, `Date` instances, or Node.js `Buffer` instances. Arrays repeat the element for each item; dates use `toISOString()` by default; buffers use base64. `true` and `false` become `1` and `0`. Empty strings and `null` produce self-closing elements, and a `null` attribute becomes an empty string.
 
-```xml
-<div id="id">Hello, <span style="font-weight: bold">World</span>!</div>
+By default, strings and attribute strings escape `"`, `'`, `&`, `<`, and `>`. Element and attribute names are validated. The transformer throws for an input without exactly one root, an array root, invalid names, unsupported attribute values, and unsupported object children such as regular expressions.
+
+### Input mutation
+
+During transformation, `@` properties are consumed from plain-object nodes: they are read as attributes and removed from those input objects. Clone the object first if you need to retain those properties after calling `transform`.
+
+## Options and formatters
+
+`transform(object, options)` accepts these options:
+
+- `pretty` — formats nested elements with newlines and indentation; default: `false`.
+- `indent` — indentation used by `pretty`; default: two spaces.
+- `declaration` — prepends `<?xml version="1.0" encoding="UTF-8" ?>`; default: `false`.
+- `formatters` — optional callbacks for `string`, `number`, `boolean`, and `date` values. Each callback receives the value and returns the XML text to use.
+
+```ts
+import type { AnyObject, TransformFormatter, TransformOptions } from "o2xml";
+
+const number: TransformFormatter<number> = (value) => `n:${value}`;
+const options: TransformOptions = {
+    pretty: true,
+    indent: "\t",
+    declaration: true,
+    formatters: {
+        number,
+        boolean: String,
+        date: () => "DATE",
+        string: (value) => value.toUpperCase(),
+    },
+};
+const value: AnyObject = { root: { value: 2 } };
+
+transform(value, options);
 ```
 
-## Note
+`AnyObject` describes the input shape, `TransformFormatter<T>` describes a formatter callback, and `TransformOptions` describes the optional second argument. A custom string formatter replaces the default escaping, so it must escape XML itself when needed.
 
- - Text escape by default (amp, quote, single quote, left/right angle brackets).
- - Node.js Buffer will be converted to base64 encoded string.
- - String nodes must start with `#` and key must be unique in space.
+## Development
+
+This repository uses Bun:
+
+```sh
+bun install
+bun run security
+bun test
+bun run build
+bun run check
+```
