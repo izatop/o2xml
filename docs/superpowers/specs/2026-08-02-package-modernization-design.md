@@ -55,6 +55,8 @@ import { transform } from "o2xml";
 
 The migration will not add a default export or change transformation output.
 The package has no runtime dependencies and will keep that property.
+`@types/node` will remain in `devDependencies` and stay out of the published
+runtime dependency graph. The package does not need `@types/sax`.
 
 ## Toolchain and Dependencies
 
@@ -166,6 +168,8 @@ automatic version-bump workflow.
   production source.
 - `bun run build` creates the CJS, ESM, source map, and declaration artifacts.
 - Packed ESM, CommonJS, and TypeScript consumers load the documented API.
+- The packed manifest has no runtime dependencies and keeps `@types/node` in
+  `devDependencies`.
 - `bun run check` passes from a clean checkout.
 - CI runs the audit and full check on pushes and pull requests.
 - Publish uses npm Trusted Publishing and no registry token secret.
