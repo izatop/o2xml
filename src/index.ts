@@ -32,7 +32,7 @@ type NormalizedOptions = {
 };
 
 const validateElementName = (name: string): boolean => {
-    return null !== name && /^([a-z][a-z0-9_\-\.]*(:[a-z][a-z0-9_\-\.]*)?|:[a-z][a-z0-9_\-\.:]*)$/i.test(name);
+    return null !== name && /^([a-z][a-z0-9_\-.]*(:[a-z][a-z0-9_\-.]*)?|:[a-z][a-z0-9_\-.:]*)$/i.test(name);
 };
 
 const repeat = (string: string, repeat: number): string => {

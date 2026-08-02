@@ -11,6 +11,6 @@ type Equal<Left, Right> =
 
 type Assert<Value extends true> = Value;
 
-type TransformObjectDeclarationOptionIsOptional = Assert<
+export type TransformObjectDeclarationOptionIsOptional = Assert<
     Equal<TransformObject["options"]["declaration"], boolean | undefined>
 >;
