@@ -1,33 +1,43 @@
 'use strict';
 
-declare var Buffer:any;
+import { Buffer } from "node:buffer";
 
-interface AnyObject {
-    [root:string]:any;
+export interface AnyObject {
+    [root: string]: unknown;
 }
 
-interface TransformFormatter<T> {
-    (value:T):string;
+export interface TransformFormatter<T> {
+    (value: T): string;
 }
 
-interface TransformOptions {
-    pretty?:boolean;
-    indent?:string;
-    declaration?:boolean;
-    formatters?: {
-        string?:TransformFormatter<string>;
-        number?:TransformFormatter<number>;
-        date?:TransformFormatter<Date>;
-        boolean?:TransformFormatter<boolean>;
-    }
+interface TransformFormatters {
+    string?: TransformFormatter<string>;
+    number?: TransformFormatter<number>;
+    date?: TransformFormatter<Date>;
+    boolean?: TransformFormatter<boolean>;
 }
 
-const validateElementName = (name:string) => {
+export interface TransformOptions {
+    pretty?: boolean;
+    indent?: string;
+    declaration?: boolean;
+    formatters?: TransformFormatters;
+}
+
+type NormalizedOptions = {
+    pretty: boolean;
+    indent: string;
+    declaration: boolean;
+    formatters: Required<Omit<TransformFormatters, "date">> &
+        Pick<TransformFormatters, "date">;
+};
+
+const validateElementName = (name: string): boolean => {
     return null !== name && /^([a-z][a-z0-9_\-\.]*(:[a-z][a-z0-9_\-\.]*)?|:[a-z][a-z0-9_\-\.:]*)$/i.test(name);
 };
 
-const repeat = (string:string, repeat:number) => {
-    let result:string = '';
+const repeat = (string: string, repeat: number): string => {
+    let result = '';
     for (let i = 0; i < repeat; i++) {
         result += string;
     }
@@ -35,10 +45,10 @@ const repeat = (string:string, repeat:number) => {
     return result;
 };
 
-const isPlainObject = (obj:any):boolean => {
+const isPlainObject = (obj: unknown): obj is Record<string, unknown> => {
     if (typeof obj == 'object' && obj !== null) {
         if (typeof Object.getPrototypeOf == 'function') {
-            let proto:any = Object.getPrototypeOf(obj);
+            const proto = Object.getPrototypeOf(obj);
             return proto === Object.prototype || proto === null;
         }
 
@@ -49,49 +59,49 @@ const isPlainObject = (obj:any):boolean => {
 };
 
 const escapeStringReg = /["'&<>]/g;
-const escapeStringCodes = {'"': '&quot;', '\'': '&#39;', '&': '&amp;', '<': '&lt;', '>': '&gt;'};
-const escapeString = (string:string):string => {
-    return string.replace(escapeStringReg, (char:string):string => {
+const escapeStringCodes: Record<string, string> = {'"': '&quot;', '\'': '&#39;', '&': '&amp;', '<': '&lt;', '>': '&gt;'};
+const escapeString = (string: string): string => {
+    return string.replace(escapeStringReg, (char: string): string => {
         return escapeStringCodes[char] || char;
     });
 };
 
-const transform = (object:AnyObject, options?:TransformOptions) => {
+const transform = (object: AnyObject, options?: TransformOptions): string => {
     if (Object.keys(object).length !== 1) {
         throw new Error('Object must have one the root element.')
     }
 
     // Check a key for null because Object.keys returns null as a string "null"
-    if (<any> null in object) {
+    if (null as unknown as PropertyKey in object) {
         throw new Error('Null cannot be a root element name.');
     }
 
-    let rootNodeName:string = Object.keys(object)[0],
-        rootElement = new TransformObject(rootNodeName, object[rootNodeName], options);
+    const rootNodeName = Object.keys(object)[0];
+    const rootElement = new TransformObject(rootNodeName, object[rootNodeName], options);
 
     return rootElement.transform();
 };
 
 class TransformObject {
-    name:string;
-    children:any;
-    options:TransformOptions;
+    name: string;
+    children: unknown;
+    options: NormalizedOptions;
 
-    constructor(name:string, children:any, options?:TransformOptions) {
+    constructor(name: string, children: unknown, options?: TransformOptions) {
         this.name = name;
         this.children = children;
-        this.options = options || {};
+        this.options = (options || {}) as NormalizedOptions;
 
         if (Array.isArray(children)) {
             throw new Error('Root element cannot be a list');
         }
 
         if (false === this.options.hasOwnProperty('formatters')) {
-            this.options.formatters = {};
+            this.options.formatters = {} as NormalizedOptions["formatters"];
         }
 
         if (typeof this.options.formatters.boolean !== "function") {
-            this.options.formatters.boolean = (v:boolean) => parseInt(<any> v + 0).toString();
+            this.options.formatters.boolean = (value: boolean) => Number(value).toString();
         }
 
         if (typeof this.options.formatters.string !== "function") {
@@ -99,7 +109,7 @@ class TransformObject {
         }
 
         if (typeof this.options.formatters.number !== "function") {
-            this.options.formatters.number = (v:number) => v.toString();
+            this.options.formatters.number = (value: number) => value.toString();
         }
 
         if (false === this.options.hasOwnProperty('pretty')) {
@@ -111,7 +121,7 @@ class TransformObject {
         }
     }
 
-    transform() {
+    transform(): string {
         if (this.options.declaration) {
             return '<?xml version="1.0" encoding="UTF-8" ?>' + (this.options.pretty ? "\n" : "")
                 + this.createNode(this.name, this.children, -1);
@@ -120,14 +130,14 @@ class TransformObject {
         return this.createNode(this.name, this.children, -1);
     }
 
-    private createNode(node:string, children?:any, level?:number):string {
+    private createNode(node: string, children?: unknown, level: number = -1): string {
         let returnString = '';
         if (Array.isArray(children)) {
             returnString = children.map(value => this.createNode(node, value, level)).join('');
         } else {
             switch (typeof children) {
-                case 'object':
-                    let attributes = {};
+                case 'object': {
+                    const attributes: Record<string, unknown> = {};
                     if (isPlainObject(children)) {
                         Object.keys(children)
                             .forEach(key => {
@@ -140,40 +150,41 @@ class TransformObject {
 
                     returnString = this.wrapNode(level + 1, node, this.getObjectNode(children, level), this.getObjectAttributes(attributes));
                     break;
+                }
                 case 'string':
                     if (node.charCodeAt(0) == 35) {
                         return this.getStringNode(children);
                     }
 
-                    returnString = this.wrapNode(level+1, node, this.getStringNode(children));
+                    returnString = this.wrapNode(level + 1, node, this.getStringNode(children));
                     break;
                 case 'number':
-                    returnString = this.wrapNode(level+1, node, this.getNumberNode(children));
+                    returnString = this.wrapNode(level + 1, node, this.getNumberNode(children));
                     break;
                 case 'boolean':
-                    returnString = this.wrapNode(level+1, node, this.getBooleanNode(children));
+                    returnString = this.wrapNode(level + 1, node, this.getBooleanNode(children));
                     break;
                 default:
-                    returnString = this.wrapNode(level+1, node, `<!-- ${typeof children} -->`);
+                    returnString = this.wrapNode(level + 1, node, `<!-- ${typeof children} -->`);
             }
         }
 
         return returnString;
-    };
+    }
 
-    private getObjectNode(object:any, level?:number):string {
+    private getObjectNode(object: unknown, level: number = -1): string {
         if (object === null) {
             return '';
         } else if (isPlainObject(object)) {
             // Check a key for null because Object.keys returns null as a string "null"
-            if (<any> null in object) {
+            if (null as unknown as PropertyKey in object) {
                 throw new Error('Null cannot be an element name.');
             }
 
             return Object.keys(object)
                 .map(node => this.createNode(node, object[node], level + 1))
                 .join('');
-        } else if (Buffer && Buffer.isBuffer(object)) { // check for Node.js Buffer
+        } else if (Buffer.isBuffer(object)) { // check for Node.js Buffer
             return object.toString('base64');
         } else if (object instanceof Date) {
             if (this.options.formatters.date) {
@@ -182,43 +193,44 @@ class TransformObject {
 
             return object.toISOString();
         } else {
-            throw new TypeError('Cannot convert object to Node: ' + object.toString());
+            throw new TypeError('Cannot convert object to Node: ' + (object as { toString(): string }).toString());
         }
     }
 
-    private getObjectAttributes(object:any) {
-        let attributes:Array<{key:string, value:string}> = [];
+    private getObjectAttributes(object: Record<string, unknown>): string {
+        const attributes: Array<{ key: string; value: string }> = [];
         Object.keys(object).forEach(key => {
-            let name = key.substr(1),
-                value;
+            const name = key.substr(1);
+            const attributeValue = object[key];
+            let value: string;
 
             if (false === validateElementName(name)) {
                 throw new Error(`An element name "${name}" is not valid`);
             }
 
-            switch (typeof object[key]) {
+            switch (typeof attributeValue) {
                 case 'string':
-                    value = this.getStringNode(object[key]);
+                    value = this.getStringNode(attributeValue);
                     break;
                 case 'number':
-                    value = this.getNumberNode(object[key]);
+                    value = this.getNumberNode(attributeValue);
                     break;
                 case 'boolean':
-                    value = this.getBooleanNode(object[key]);
+                    value = this.getBooleanNode(attributeValue);
                     break;
                 default:
-                    if (object[key] === null) {
+                    if (attributeValue === null) {
                         value = '';
-                    } else if (object[key] instanceof Date) {
+                    } else if (attributeValue instanceof Date) {
                         if (this.options.formatters.date) {
-                            value = this.options.formatters.date(object[key]);
+                            value = this.options.formatters.date(attributeValue);
                         } else {
-                            value = object[key].toISOString();
+                            value = attributeValue.toISOString();
                         }
-                    } else if (Buffer && Buffer.isBuffer(object[key])) { // check for Node.js Buffer
-                        value = object[key].toString('base64');
+                    } else if (Buffer.isBuffer(attributeValue)) { // check for Node.js Buffer
+                        value = attributeValue.toString('base64');
                     } else {
-                        throw new Error(`Invalid an attribute "${name}" value: ${typeof object[key]}`);
+                        throw new Error(`Invalid an attribute "${name}" value: ${typeof attributeValue}`);
                     }
             }
 
@@ -228,7 +240,7 @@ class TransformObject {
         return attributes.map(x => `${x.key}="${x.value}"`).join(' ');
     }
 
-    private getStringNode(value:string):string {
+    private getStringNode(value: string): string {
         if (this.options.formatters.string) {
             return this.options.formatters.string(value);
         }
@@ -236,7 +248,7 @@ class TransformObject {
         return value;
     }
 
-    private getNumberNode(value:number):string {
+    private getNumberNode(value: number): string {
         if (this.options.formatters.number) {
             return this.options.formatters.number(value);
         }
@@ -244,7 +256,7 @@ class TransformObject {
         return value.toString(10);
     }
 
-    private getBooleanNode(value:boolean):string {
+    private getBooleanNode(value: boolean): string {
         if (this.options.formatters.boolean) {
             return this.options.formatters.boolean(value);
         }
@@ -252,7 +264,7 @@ class TransformObject {
         return value.toString();
     }
 
-    private wrapNode(level:number, name:string, content?:string, attributes?:string) {
+    private wrapNode(level: number, name: string, content?: string, attributes?: string): string {
         if (false === validateElementName(name)) {
             throw new Error(`An element name "${name}" is not valid`);
         }
@@ -263,22 +275,22 @@ class TransformObject {
 
         if (this.options.pretty) {
             if (typeof content === "string" && content.length > 0) {
-                let hasChild = content.indexOf(repeat(this.options.indent, level + 1) + '<') === 0;
+                const hasChild = content.indexOf(repeat(this.options.indent, level + 1) + '<') === 0;
                 return `${repeat(this.options.indent, level)}`
-                    + `<${name}${attributes?' '+attributes:''}>`
+                    + `<${name}${attributes ? ' ' + attributes : ''}>`
                     + `${hasChild ? "\n" : ""}${content}`
                     + `${hasChild ? repeat(this.options.indent, level) : ""}</${name}>\n`;
             }
 
-            return `<${name}${attributes?' '+attributes:''} />`;
+            return `<${name}${attributes ? ' ' + attributes : ''} />`;
         }
 
         if (typeof content === "string" && content.length > 0) {
-            return `<${name}${attributes?' '+attributes:''}>${content}</${name}>`;
+            return `<${name}${attributes ? ' ' + attributes : ''}>${content}</${name}>`;
         }
 
-        return `<${name}${attributes?' '+attributes:''} />`;
+        return `<${name}${attributes ? ' ' + attributes : ''} />`;
     }
 }
 
-export {AnyObject, TransformFormatter, TransformOptions, TransformObject, transform};
+export { TransformObject, transform };
