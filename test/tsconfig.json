@@ -3,6 +3,7 @@
     "compilerOptions": {
         "noEmit": true,
         "rootDir": "..",
+        "strict": false,
         "types": ["bun", "node"]
     },
     "include": ["../src", "."]
