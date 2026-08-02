@@ -338,7 +338,7 @@ git commit -m "refactor: type-check transformer with TypeScript 7"
 **Interfaces:**
 
 - Consumes: `transform` options, values, validation, formatter, and error paths.
-- Produces: coverage value `1` for lines, functions, and statements.
+- Produces: coverage value `1.0` for lines, functions, and statements.
 
 - [ ] **Step 1: Enable the coverage gate**
 
@@ -349,7 +349,7 @@ Append:
 coverage = true
 coverageSkipTestFiles = true
 coveragePathIgnorePatterns = ["test/**"]
-coverageThreshold = { lines = 1, functions = 1, statements = 1 }
+coverageThreshold = { lines = 1.0, functions = 1.0, statements = 1.0 }
 ```
 
 - [ ] **Step 2: Run coverage and capture RED**
