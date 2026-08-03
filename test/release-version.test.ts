@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { fileURLToPath } from "node:url";
-import { incrementPatch, resolveRelease } from "../scripts/release-version";
+import { incrementPatch, resolvePublication, resolveRelease } from "../scripts/release-version";
 
 const script = fileURLToPath(new URL("../scripts/release-version.ts", import.meta.url));
 
@@ -93,6 +93,58 @@ describe("resolveRelease", () => {
     });
 });
 
+describe("resolvePublication", () => {
+    test("publishes the next absent patch", () => {
+        expect(
+            resolvePublication({
+                packageVersion: "0.3.3",
+                registryVersion: "0.3.2",
+                candidateExists: false,
+            }),
+        ).toEqual({ publishRequired: true });
+    });
+
+    test("treats an already published tagged version as an idempotent retry", () => {
+        expect(
+            resolvePublication({
+                packageVersion: "0.3.3",
+                registryVersion: "0.3.3",
+                candidateExists: true,
+            }),
+        ).toEqual({ publishRequired: false });
+    });
+
+    test("rejects an occupied candidate that is not latest", () => {
+        expect(() =>
+            resolvePublication({
+                packageVersion: "0.3.3",
+                registryVersion: "0.3.2",
+                candidateExists: true,
+            }),
+        ).toThrow("Cannot publish 0.3.3: version already exists but npm latest is 0.3.2");
+    });
+
+    test("rejects registry metadata that omits its latest version", () => {
+        expect(() =>
+            resolvePublication({
+                packageVersion: "0.3.3",
+                registryVersion: "0.3.3",
+                candidateExists: false,
+            }),
+        ).toThrow("Registry inconsistency: latest 0.3.3 is missing from published versions");
+    });
+
+    test("rejects a package version unrelated to npm latest", () => {
+        expect(() =>
+            resolvePublication({
+                packageVersion: "0.3.4",
+                registryVersion: "0.3.2",
+                candidateExists: false,
+            }),
+        ).toThrow("Publication divergence: package.json=0.3.4, npm=0.3.2, expected patch=0.3.3");
+    });
+});
+
 describe("release-version CLI", () => {
     test("prints a GitHub output-compatible prepare decision", () => {
         const result = Bun.spawnSync(["bun", script, "resolve", "0.3.2", "0.3.2", "-"]);
@@ -106,5 +158,12 @@ describe("release-version CLI", () => {
 
         expect(result.exitCode).toBe(1);
         expect(result.stderr.toString()).toContain("Version divergence");
+    });
+
+    test("prints a GitHub output-compatible publication decision", () => {
+        const result = Bun.spawnSync(["bun", script, "publication", "0.3.3", "0.3.2", "false"]);
+
+        expect(result.exitCode).toBe(0);
+        expect(result.stdout.toString()).toBe("publish-required=true\n");
     });
 });
